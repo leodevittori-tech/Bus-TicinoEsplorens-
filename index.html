@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#08111f" />
+  <title>Bus Ticino Explorer</title>
+  <style>
+    :root{
+      --bg:#07111f;
+      --panel:#0e1b2d;
+      --panel2:#13243a;
+      --text:#f4f7fb;
+      --muted:#9db0c6;
+      --line:rgba(255,255,255,.09);
+      --accent:#35d4ff;
+      --green:#50e39a;
+      --yellow:#ffd54f;
+      --orange:#ff9a4d;
+      --red:#ff6c7b;
+      --shadow:0 18px 60px rgba(0,0,0,.25);
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at top right, rgba(53,212,255,.12), transparent 28rem),
+        linear-gradient(180deg,#07111f,#0a1424 55%,#08111f);
+      color:var(--text);
+      min-height:100vh;
+    }
+    a{color:inherit}
+    button,input,select{font:inherit}
+    .wrap{width:min(1180px,calc(100% - 28px));margin:auto}
+    header{padding:34px 0 18px}
+    .topbar{display:flex;justify-content:space-between;align-items:center;gap:18px}
+    .brand{display:flex;align-items:center;gap:13px}
+    .logo{
+      width:54px;height:54px;border-radius:17px;
+      display:grid;place-items:center;font-size:28px;
+      background:linear-gradient(145deg,#1a314d,#0d1a2b);
+      box-shadow:inset 0 0 0 1px var(--line),var(--shadow);
+    }
+    .brand h1{margin:0;font-size:clamp(21px,4vw,31px);letter-spacing:-.04em}
+    .brand p{margin:3px 0 0;color:var(--muted);font-size:13px}
+    .github{
+      padding:11px 15px;border:1px solid var(--line);border-radius:14px;
+      background:rgba(255,255,255,.045);color:#fff;text-decoration:none;
+      font-weight:750;font-size:13px;
+    }
+    .hero{
+      margin-top:24px;padding:30px;border-radius:28px;
+      background:linear-gradient(135deg,rgba(28,55,84,.92),rgba(12,29,49,.96));
+      border:1px solid var(--line);box-shadow:var(--shadow);overflow:hidden;position:relative;
+    }
+    .hero:after{
+      content:"🚌";position:absolute;right:28px;bottom:-20px;font-size:140px;opacity:.08;transform:rotate(-5deg)
+    }
+    .hero h2{font-size:clamp(30px,6vw,58px);line-height:.98;letter-spacing:-.055em;margin:0;max-width:780px}
+    .hero p{color:#bfd0e3;max-width:740px;line-height:1.6;margin:18px 0 0}
+    .stats{display:flex;gap:10px;flex-wrap:wrap;margin-top:22px}
+    .stat{padding:10px 13px;border-radius:13px;background:rgba(255,255,255,.06);border:1px solid var(--line);font-size:13px}
+    .toolbar{
+      display:grid;grid-template-columns:1.6fr repeat(2,minmax(150px,.65fr));
+      gap:10px;margin:22px 0 14px;
+    }
+    .field{
+      width:100%;background:var(--panel);color:var(--text);
+      border:1px solid var(--line);border-radius:15px;padding:13px 14px;outline:none;
+    }
+    .field:focus{border-color:rgba(53,212,255,.55);box-shadow:0 0 0 3px rgba(53,212,255,.09)}
+    .tabs{display:flex;gap:9px;overflow:auto;padding:3px 0 12px;scrollbar-width:none}
+    .tab{
+      white-space:nowrap;border:1px solid var(--line);color:#c8d6e5;background:var(--panel);
+      border-radius:999px;padding:10px 14px;font-weight:750;cursor:pointer;
+    }
+    .tab.active{background:#f4f7fb;color:#07111f;border-color:#f4f7fb}
+    .sectionTitle{display:flex;justify-content:space-between;align-items:end;margin:22px 1px 13px}
+    .sectionTitle h3{margin:0;font-size:21px}
+    .sectionTitle span{color:var(--muted);font-size:13px}
+    .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+    .card{
+      background:linear-gradient(180deg,var(--panel2),var(--panel));
+      border:1px solid var(--line);border-radius:22px;padding:17px;
+      box-shadow:0 12px 35px rgba(0,0,0,.13);position:relative;
+      transition:.2s transform,.2s border-color;
+    }
+    .card:hover{transform:translateY(-3px);border-color:rgba(255,255,255,.16)}
+    .busArt{
+      height:126px;border-radius:17px;display:flex;align-items:center;justify-content:center;
+      font-size:68px;position:relative;overflow:hidden;margin-bottom:15px;
+      background:linear-gradient(135deg,var(--card1),var(--card2));
+    }
+    .busArt:before,.busArt:after{content:"";position:absolute;border-radius:999px;background:rgba(255,255,255,.15)}
+    .busArt:before{width:190px;height:190px;right:-60px;top:-105px}
+    .busArt:after{width:95px;height:95px;left:-30px;bottom:-45px}
+    .badges{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:10px}
+    .badge{font-size:11px;font-weight:850;padding:5px 8px;border-radius:999px;background:rgba(255,255,255,.075);border:1px solid var(--line)}
+    .badge.electric{background:rgba(80,227,154,.12);color:#83f0b6;border-color:rgba(80,227,154,.2)}
+    .badge.hybrid{background:rgba(255,213,79,.11);color:#ffe17f}
+    .card h4{margin:0 0 6px;font-size:19px;letter-spacing:-.025em}
+    .sub{margin:0;color:var(--muted);font-size:13px;line-height:1.5;min-height:39px}
+    .actions{display:grid;grid-template-columns:1fr auto auto;gap:7px;margin-top:15px}
+    .btn{
+      border:0;border-radius:12px;padding:10px 11px;background:#eef4fb;color:#09111d;
+      font-weight:850;cursor:pointer;
+    }
+    .iconBtn{width:42px;padding:0;background:rgba(255,255,255,.06);color:#fff;border:1px solid var(--line)}
+    .iconBtn.on{color:#ff7990;background:rgba(255,108,123,.12)}
+    .compare.on{color:#6de5ff;background:rgba(53,212,255,.11)}
+    .empty{grid-column:1/-1;text-align:center;padding:55px 20px;color:var(--muted)}
+    footer{padding:38px 0 55px;color:#8fa1b5;font-size:12px;line-height:1.7}
+    .compareBar{
+      position:fixed;z-index:30;left:50%;transform:translateX(-50%);
+      bottom:15px;width:min(760px,calc(100% - 24px));padding:10px 11px 10px 14px;
+      border-radius:17px;background:rgba(9,19,33,.93);backdrop-filter:blur(18px);
+      border:1px solid var(--line);box-shadow:0 20px 60px rgba(0,0,0,.38);
+      display:none;align-items:center;justify-content:space-between;gap:12px;
+    }
+    .compareBar.show{display:flex}
+    .compareBar span{font-size:13px;color:#c8d4e2}
+    dialog{
+      width:min(820px,calc(100% - 24px));border:1px solid var(--line);border-radius:24px;
+      padding:0;background:#0b1728;color:#fff;box-shadow:0 25px 100px rgba(0,0,0,.6)
+    }
+    dialog::backdrop{background:rgba(2,7,14,.73);backdrop-filter:blur(6px)}
+    .modalHead{padding:21px 21px 16px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:15px}
+    .modalHead h3{margin:0;font-size:25px}
+    .close{border:0;background:rgba(255,255,255,.07);color:#fff;border-radius:12px;width:39px;height:39px;cursor:pointer}
+    .modalBody{padding:20px}
+    .facts{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+    .fact{padding:13px;border-radius:14px;background:rgba(255,255,255,.045);border:1px solid var(--line)}
+    .fact b{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:#8fa4ba;margin-bottom:5px}
+    .note{margin-top:13px;color:#b8c8d8;line-height:1.65;font-size:14px}
+    .source{display:inline-block;margin-top:13px;color:#67ddff;text-decoration:none;font-size:13px;font-weight:750}
+    .compareTable{width:100%;border-collapse:collapse}
+    .compareTable th,.compareTable td{text-align:left;padding:11px;border-bottom:1px solid var(--line);font-size:13px;vertical-align:top}
+    .compareTable th{color:#95a8bc;width:22%}
+    @media(max-width:850px){
+      .grid{grid-template-columns:repeat(2,1fr)}
+      .toolbar{grid-template-columns:1fr 1fr}.toolbar input{grid-column:1/-1}
+    }
+    @media(max-width:560px){
+      header{padding-top:20px}.github{display:none}.hero{padding:23px}.hero h2{font-size:39px}
+      .grid{grid-template-columns:1fr}.toolbar{grid-template-columns:1fr}.toolbar input{grid-column:auto}
+      .facts{grid-template-columns:1fr}.sectionTitle{align-items:center}
+    }
+  </style>
+</head>
+<body>
+<header class="wrap">
+  <div class="topbar">
+    <div class="brand">
+      <div class="logo">🚌</div>
+      <div><h1>Bus Ticino Explorer</h1><p>TPL · ARL · AutoPostale</p></div>
+    </div>
+    <a class="github" href="#info">Pronto per GitHub Pages</a>
+  </div>
+
+  <section class="hero">
+    <h2>Tutti i bus, in un solo posto.</h2>
+    <p>Seleziona un autobus per vedere azienda, modello, alimentazione, linea, anno e dettagli. Cerca per nome, filtra la flotta, salva i preferiti e confronta i mezzi.</p>
+    <div class="stats">
+      <div class="stat"><b id="countAll">0</b> schede</div>
+      <div class="stat">⚡ bus elettrici evidenziati</div>
+      <div class="stat">❤️ preferiti salvati sul dispositivo</div>
+    </div>
+  </section>
+</header>
+
+<main class="wrap">
+  <div class="toolbar">
+    <input id="search" class="field" placeholder="Cerca: HESS, Citaro, linea 5, elettrico…" />
+    <select id="power" class="field">
+      <option value="all">Tutte le alimentazioni</option>
+      <option value="Elettrico">⚡ Elettrico</option>
+      <option value="Ibrido">♻️ Ibrido</option>
+      <option value="Diesel">⛽ Diesel</option>
+    </select>
+    <select id="sort" class="field">
+      <option value="name">Ordina: nome</option>
+      <option value="company">Ordina: azienda</option>
+      <option value="year">Ordina: anno</option>
+    </select>
+  </div>
+
+  <div class="tabs" id="tabs">
+    <button class="tab active" data-company="all">Tutti</button>
+    <button class="tab" data-company="TPL">TPL</button>
+    <button class="tab" data-company="ARL">ARL</button>
+    <button class="tab" data-company="AutoPostale">AutoPostale</button>
+    <button class="tab" data-company="favorites">❤️ Preferiti</button>
+  </div>
+
+  <div class="sectionTitle">
+    <h3 id="listTitle">Catalogo autobus</h3>
+    <span id="visibleCount"></span>
+  </div>
+  <section class="grid" id="grid"></section>
+</main>
+
+<div class="compareBar" id="compareBar">
+  <span id="compareText">0 bus selezionati</span>
+  <div>
+    <button class="btn iconBtn" id="clearCompare">×</button>
+    <button class="btn" id="openCompare">Confronta</button>
+  </div>
+</div>
+
+<dialog id="detailDialog">
+  <div class="modalHead">
+    <div><div id="detailCompany" style="color:#9fb2c7;font-size:12px;font-weight:800"></div><h3 id="detailTitle"></h3></div>
+    <button class="close" onclick="detailDialog.close()">✕</button>
+  </div>
+  <div class="modalBody" id="detailBody"></div>
+</dialog>
+
+<dialog id="compareDialog">
+  <div class="modalHead">
+    <h3>Confronta autobus</h3>
+    <button class="close" onclick="compareDialog.close()">✕</button>
+  </div>
+  <div class="modalBody" id="compareBody"></div>
+</dialog>
+
+<footer class="wrap" id="info">
+  <b>Bus Ticino Explorer – versione iniziale</b><br>
+  I dati inseriti servono come base del catalogo e possono essere ampliati facilmente nel blocco <code>busData</code> del file.
+  Le informazioni operative possono cambiare: per orari e servizio consulta sempre i siti ufficiali degli operatori.
+</footer>
+
+<script>
+const busData = [
+  {
+    id:"tpl-hess-19opp", company:"TPL", name:"HESS lighTram® 19 OPP", power:"Elettrico",
+    year:2025, type:"Articolato", line:"Linea 5", route:"Viganello – Lugano Centro – Vezia – Lamone – Manno",
+    fleet:"8 veicoli", charging:"Ricarica rapida ai capolinea", service:"Fino a 19,5 ore di servizio",
+    note:"Dal 14 dicembre 2025 i primi bus articolati totalmente elettrici della Linea 5 sono entrati ufficialmente in servizio. È il modello elettrico simbolo della nuova fase TPL.",
+    source:"https://www.hess-ag.ch/company/news/news-detail/news/detail/News/lightramr-enters-regular-service-in-ticino-for-the-first-time.html?L=2",
+    color1:"#0877a8", color2:"#22c4e7", icon:"⚡🚌"
+  },
+  {
+    id:"tpl-citaro-c2", company:"TPL", name:"Mercedes-Benz Citaro C2", power:"Diesel",
+    year:2026, type:"Urbano", line:"Rete TPL", route:"Lugano e comuni serviti dalla rete urbana",
+    fleet:"Esemplari in servizio", charging:"—", service:"Servizio urbano",
+    note:"Il Mercedes-Benz Citaro di seconda generazione è documentato in servizio TPL nel 2026. Questa scheda può essere completata con matricole e specifiche della singola vettura.",
+    source:"https://www.bus-bild.de/bild/schweiz~staedte~lugano/222720/arl-nr-23-mercedes-citaro-c2.html",
+    color1:"#245fa5", color2:"#4aa8ff", icon:"🚌"
+  },
+  {
+    id:"arl-citaro-c2", company:"ARL", name:"Mercedes-Benz Citaro C2", power:"Diesel",
+    year:2018, type:"Urbano / regionale", line:"Rete ARL", route:"Luganese",
+    fleet:"Esempio flotta ARL", charging:"—", service:"Servizio regionale",
+    note:"Un Citaro C2 ARL è documentato nella flotta e fotografato nel 2026 sulla linea 461. La rete ARL comprende, tra le altre, le linee 19, 441, 461 e 462.",
+    source:"https://www.bus-bild.de/bild/schweiz~staedte~lugano/224772/arl---mercedes-citaro-nr2-ti.html",
+    color1:"#b51d31", color2:"#ee5665", icon:"🚌"
+  },
+  {
+    id:"arl-citaro-hybrid", company:"ARL", name:"Mercedes-Benz Citaro C2 Hybrid", power:"Ibrido",
+    year:2021, type:"Urbano / regionale", line:"Rete ARL", route:"Luganese",
+    fleet:"Esemplari documentati", charging:"Sistema ibrido", service:"Servizio regionale",
+    note:"Veicoli Citaro C2 Hybrid risultano documentati nella flotta ARL; una vettura n. 23 è stata fotografata a Lugano nel dicembre 2025.",
+    source:"https://www.bus-bild.de/bild/schweiz~staedte~lugano/222720/arl-nr-23-mercedes-citaro-c2.html",
+    color1:"#9c2335", color2:"#e0b647", icon:"♻️🚌"
+  },
+  {
+    id:"arl-citaro-g", company:"ARL", name:"Mercedes-Benz Citaro C2 G", power:"Diesel",
+    year:2017, type:"Articolato", line:"Rete ARL", route:"Luganese",
+    fleet:"Esemplare documentato", charging:"—", service:"Servizio regionale",
+    note:"Il Citaro C2 G articolato figura in elenchi pubblici della flotta ARL. È utile per distinguere i mezzi snodati dai Citaro standard.",
+    source:"https://www.fotobus.me/depot/14093?lang=de&sort=sgos",
+    color1:"#7d1226", color2:"#c83347", icon:"🚌➖🚌"
+  },
+  {
+    id:"post-solaris12-2026", company:"AutoPostale", name:"Solaris Urbino 12 elettrico", power:"Elettrico",
+    year:2026, type:"12 metri", line:"Linea 2 TPB", route:"Bellinzona FFS – Monte Carasso – Sementina – Giubiasco FFS",
+    fleet:"4 nuovi autobus", charging:"Ricarica in deposito", service:"Trasporto Pubblico del Bellinzonese",
+    note:"Quattro Solaris Urbino 12 completamente elettrici sono previsti/in servizio sulla Linea 2 del Bellinzonese dal 2026, nell'ambito dell'elettrificazione AutoPostale in Ticino.",
+    source:"https://www.postauto.ch/it/orario-e-rete/trasporti-locali/trasporto-pubblico-del-bellinzonese",
+    color1:"#e6b900", color2:"#ffe96d", icon:"⚡🚌"
+  },
+  {
+    id:"post-electric-line1", company:"AutoPostale", name:"E-Bus TPB – Linea 1", power:"Elettrico",
+    year:2025, type:"Urbano elettrico", line:"Linea 1 TPB", route:"Castione FFS – Arbedo – Bellinzona FFS – Camorino",
+    fleet:"In servizio dal 2025", charging:"Ricarica in deposito", service:"Trasporto Pubblico del Bellinzonese",
+    note:"Dal 2025 veicoli elettrici circolano sulla Linea 1 del Trasporto Pubblico del Bellinzonese. AutoPostale indica che la ricarica avviene in deposito durante le pause o a fine turno.",
+    source:"https://www.postauto.ch/it/orario-e-rete/trasporti-locali/trasporto-pubblico-del-bellinzonese",
+    color1:"#e1b400", color2:"#ffdf37", icon:"⚡🚌"
+  }
+];
+
+let companyFilter = "all";
+let compare = [];
+let favorites = JSON.parse(localStorage.getItem("busTicinoFavorites") || "[]");
+
+const $ = s => document.querySelector(s);
+const grid = $("#grid");
+$("#countAll").textContent = busData.length;
+
+function filteredData(){
+  const q = $("#search").value.toLowerCase().trim();
+  const power = $("#power").value;
+  let data = busData.filter(b=>{
+    const companyOk = companyFilter === "all" || (companyFilter === "favorites" ? favorites.includes(b.id) : b.company === companyFilter);
+    const powerOk = power === "all" || b.power === power;
+    const text = Object.values(b).join(" ").toLowerCase();
+    return companyOk && powerOk && text.includes(q);
+  });
+  const sort = $("#sort").value;
+  data.sort((a,b)=>{
+    if(sort==="company") return (a.company+a.name).localeCompare(b.company+b.name);
+    if(sort==="year") return (b.year||0)-(a.year||0);
+    return a.name.localeCompare(b.name);
+  });
+  return data;
+}
+
+function render(){
+  const data = filteredData();
+  $("#visibleCount").textContent = `${data.length} risultati`;
+  $("#listTitle").textContent = companyFilter === "favorites" ? "I tuoi preferiti" : companyFilter === "all" ? "Catalogo autobus" : `Bus ${companyFilter}`;
+  if(!data.length){
+    grid.innerHTML = `<div class="empty">Nessun autobus trovato con questi filtri.</div>`;
+    return;
+  }
+  grid.innerHTML = data.map(b=>`
+    <article class="card" style="--card1:${b.color1};--card2:${b.color2}">
+      <div class="busArt">${b.icon}</div>
+      <div class="badges">
+        <span class="badge">${b.company}</span>
+        <span class="badge ${b.power==="Elettrico"?"electric":b.power==="Ibrido"?"hybrid":""}">${b.power==="Elettrico"?"⚡ ":b.power==="Ibrido"?"♻️ ":""}${b.power}</span>
+        <span class="badge">${b.type}</span>
+      </div>
+      <h4>${b.name}</h4>
+      <p class="sub">${b.line} · ${b.route}</p>
+      <div class="actions">
+        <button class="btn" onclick="openDetails('${b.id}')">Dettagli</button>
+        <button class="btn iconBtn ${favorites.includes(b.id)?"on":""}" onclick="toggleFavorite('${b.id}')" title="Preferito">♥</button>
+        <button class="btn iconBtn compare ${compare.includes(b.id)?"on":""}" onclick="toggleCompare('${b.id}')" title="Confronta">⇄</button>
+      </div>
+    </article>
+  `).join("");
+}
+
+function toggleFavorite(id){
+  favorites = favorites.includes(id) ? favorites.filter(x=>x!==id) : [...favorites,id];
+  localStorage.setItem("busTicinoFavorites", JSON.stringify(favorites));
+  render();
+}
+
+function toggleCompare(id){
+  if(compare.includes(id)) compare = compare.filter(x=>x!==id);
+  else if(compare.length<3) compare.push(id);
+  else alert("Puoi confrontare massimo 3 autobus alla volta.");
+  updateCompare();
+  render();
+}
+function updateCompare(){
+  $("#compareBar").classList.toggle("show", compare.length>0);
+  $("#compareText").textContent = `${compare.length} bus selezionat${compare.length===1?"o":"i"}${compare.length===3?" · massimo raggiunto":""}`;
+}
+$("#clearCompare").onclick=()=>{compare=[];updateCompare();render()};
+
+window.openDetails = id=>{
+  const b=busData.find(x=>x.id===id);
+  $("#detailCompany").textContent = `${b.company} · ${b.power}`;
+  $("#detailTitle").textContent = b.name;
+  $("#detailBody").innerHTML=`
+    <div class="facts">
+      <div class="fact"><b>Anno</b>${b.year}</div>
+      <div class="fact"><b>Tipo</b>${b.type}</div>
+      <div class="fact"><b>Linea / rete</b>${b.line}</div>
+      <div class="fact"><b>Alimentazione</b>${b.power}</div>
+      <div class="fact"><b>Percorso</b>${b.route}</div>
+      <div class="fact"><b>Flotta</b>${b.fleet}</div>
+      <div class="fact"><b>Ricarica</b>${b.charging}</div>
+      <div class="fact"><b>Servizio</b>${b.service}</div>
+    </div>
+    <p class="note">${b.note}</p>
+    <a class="source" href="${b.source}" target="_blank" rel="noopener">Apri la fonte ↗</a>
+  `;
+  detailDialog.showModal();
+};
+
+$("#openCompare").onclick=()=>{
+  const buses=compare.map(id=>busData.find(b=>b.id===id));
+  const rows=[
+    ["Azienda","company"],["Alimentazione","power"],["Anno","year"],["Tipo","type"],
+    ["Linea","line"],["Percorso","route"],["Flotta","fleet"],["Ricarica","charging"],["Servizio","service"]
+  ];
+  $("#compareBody").innerHTML=`
+    <div style="overflow:auto">
+      <table class="compareTable">
+        <tr><th>Caratteristica</th>${buses.map(b=>`<td><b>${b.name}</b></td>`).join("")}</tr>
+        ${rows.map(([label,key])=>`<tr><th>${label}</th>${buses.map(b=>`<td>${b[key]}</td>`).join("")}</tr>`).join("")}
+      </table>
+    </div>
+  `;
+  compareDialog.showModal();
+};
+
+$("#search").addEventListener("input",render);
+$("#power").addEventListener("change",render);
+$("#sort").addEventListener("change",render);
+$("#tabs").addEventListener("click",e=>{
+  const btn=e.target.closest(".tab"); if(!btn)return;
+  document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));
+  btn.classList.add("active");
+  companyFilter=btn.dataset.company;
+  render();
+});
+render();
+</script>
+</body>
+</html>
